@@ -20,3 +20,4 @@ pub trait Filosofia {
 pub mod forward;
 pub mod backward;
 pub mod central;
+pub mod imagem;
