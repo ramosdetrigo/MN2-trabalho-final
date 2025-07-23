@@ -49,14 +49,12 @@ impl Filosofia for Backward {
                     / (12.0 * delta * delta)
             }
 
-            // (25f(x-5dx) -206f(x-4dx) +664f(x-3dx) -998f(x-2dx) +772f(x-dx) -245f(x)) / 60dx²
             OrdemErro::Quarta => {
-                (25.0 * f(x - 5.0 * delta) - 206.0 * f(x - 4.0 * delta)
-                    + 664.0 * f(x - 3.0 * delta)
-                    - 998.0 * f(x - 2.0 * delta)
-                    + 772.0 * f(x - delta)
-                    - 245.0 * f(x))
-                    / (60.0 * delta * delta)
+                (45.0 * f(x) - 154.0 * f(x - delta) + 214.0 * f(x - delta * 2.0)
+                    - 156.0 * f(x - delta * 3.0)
+                    + 61.0 * f(x - delta * 4.0)
+                    - 10.0 * f(x - delta * 5.0))
+                    / (12.0 * delta * delta)
             }
         }
     }
