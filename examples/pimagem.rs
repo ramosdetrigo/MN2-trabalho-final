@@ -1,17 +1,13 @@
-use sdl2::{image::{ImageRWops, SaveSurface}, pixels::{self, PixelFormat, PixelFormatEnum}, rwops::{self, RWops}, surface::Surface};
+use sdl2::image::SaveSurface;
+use trabalho_final::unidade1::imagem::*;
 
 fn main() {
-    let mut img = RWops::from_file("img1.png", "r").unwrap().load_png().unwrap();
+    let mut img = load_png("img1.png");
 
-    img.convert_format(PixelFormatEnum::RGB888).unwrap();
-    let pixels: &mut [u8] = img.without_lock_mut().unwrap();
-
-    for pixel in pixels.chunks_mut(3) {
-        let avg = (pixel[0] as u32 + pixel[1] as u32 + pixel[2] as u32)/3;
-        if avg < 100 {
-            pixel[0] = 0;
-            pixel[1] = 0;
-            pixel[2] = 0;
+    let pixels = img.without_lock_mut().unwrap().chunks_mut(3);
+    for pixel in pixels {
+        if px_avg(pixel) < 128 {
+            px_set(pixel, 0, 0,0 );
         }
     }
 
