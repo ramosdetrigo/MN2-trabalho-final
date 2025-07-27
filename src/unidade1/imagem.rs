@@ -22,6 +22,9 @@ pub fn set_pixelf(img: &mut Surface<'static>, x: u32, y: u32, color: (f64, f64, 
     pixels[index + 2] = (color.2 * 255.0) as u8;
 }
 
+// Aplicamos um kernel de tamanho K x K em cada pixel da matriz.
+// Ignoramos os pixels das bordas, já que a matriz do kernel indexaria um pixel
+// fora da imagem, que não existe.
 pub fn convolution(image: &Surface<'static>, kernel: &[Vec<f64>]) -> Surface<'static> {
     let width = image.width();
     let height = image.height();
@@ -30,13 +33,15 @@ pub fn convolution(image: &Surface<'static>, kernel: &[Vec<f64>]) -> Surface<'st
 
     let mut output = Surface::new(width, height, PixelFormatEnum::RGB24).unwrap();
 
+    // Iterando em cada pixel x,y da matriz
     for y in k_center..(height as i32 - k_center) {
         for x in k_center..(width as i32 - k_center) {
             let mut r = 0.0;
             let mut g = 0.0;
             let mut b = 0.0;
 
-            // Aplica o kernel pro pixel (pega os arredores etc.)
+            // Aplica o kernel pro pixel (pega os pixels nos arredores e multiplica-os
+            // pelos valores da matriz kernel, somando-os)
             for j in 0..kernel_size {
                 for i in 0..kernel_size {
                     let px = x + i as i32 - k_center;

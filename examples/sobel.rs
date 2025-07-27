@@ -4,6 +4,14 @@ use trabalho_final::unidade1::imagem::*;
 fn main() {
     let img = load_png("boats.png");
 
+    // Suavizando a imagem com um kernel gaussiano normalizado
+    let gaussian_kernel = [
+        vec![1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0],
+        vec![2.0 / 16.0, 4.0 / 16.0, 2.0 / 16.0],
+        vec![1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0],
+    ];
+    let img = convolution(&img, &gaussian_kernel);
+
     // Kernel sobel 3x3 (retirado do vídeo)
     let sobel_x = [
         vec![-1.0, 0.0, 1.0],
@@ -58,8 +66,9 @@ fn main() {
     }
 
     // Salvando as imagens
-    img_a.save("outputA.png").unwrap();
-    img_b.save("outputB.png").unwrap();
-    img_c.save("outputC.png").unwrap();
-    img_d.save("outputD.png").unwrap();
+    img.save("Soutput_gaussian.png").unwrap();
+    img_a.save("SoutputA.png").unwrap();
+    img_b.save("SoutputB.png").unwrap();
+    img_c.save("SoutputC.png").unwrap();
+    img_d.save("SoutputD.png").unwrap();
 }
