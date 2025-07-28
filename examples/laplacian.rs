@@ -19,19 +19,19 @@ fn main() {
         vec![1.0,  4.0, 4.0],
     ];
 
-    // Passo 2: Aplica o filtro Laplaciano
+    // Aplica o filtro Laplaciano
     let img_a = convolution(&img, &laplace_kernel); // Imagem A
 
-    // Passo 3: Cria a imagem B com threshold de tolerância ~0
+    // Cria a imagem B com threshold de tolerância
     let mut img_b = Surface::new(img.width(), img.height(), img.pixel_format_enum()).unwrap();
-
     for x in 0..img.width() {
         for y in 0..img.height() {
             let pixel_a = get_pixelf(&img_a, x, y);
+            let pixel_a_avg = (pixel_a.0 + pixel_a.1 + pixel_a.2) / 3.0;
 
             // Verifica se o pixel é "zero"
             // (usei o threshold 0.25 pois foi o que melhor funcionou com a maior parte das imagens)
-            if pixel_a.0 < 0.25 {
+            if pixel_a_avg < 0.25 {
                 set_pixelf(&mut img_b, x, y, (0.0, 0.0, 0.0)); // Preto
             } else {
                 set_pixelf(&mut img_b, x, y, (1.0, 1.0, 1.0)); // Branco
@@ -39,7 +39,7 @@ fn main() {
         }
     }
 
-    // Salva as imagens]
+    // Salva as imagens
     img.save("Loutput_gaussian.png").unwrap();
     img_a.save("LoutputA.png").unwrap();
     img_b.save("LoutputB.png").unwrap();

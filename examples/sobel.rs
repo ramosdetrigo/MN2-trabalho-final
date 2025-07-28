@@ -53,11 +53,10 @@ fn main() {
     for x in 0..img.width() {
         for y in 0..img.height() {
             let pixel_c = get_pixelf(&img_c, x, y);
+            let pixel_c_avg = (pixel_c.0 + pixel_c.1 + pixel_c.2) / 3.0;
 
             // Aplicando um threshold de 0.5 (colore o pixel de preto se estiver abaixo de 0.5, e de branco se acima)
-            // OBS: Como as imagens estão em preto e branco, podemos assumir que
-            // o valor do pixel é qualquer um dos 3 valores (r, g, ou b)
-            if pixel_c.0 < 0.5 {
+            if pixel_c_avg < 0.5 {
                 set_pixelf(&mut img_d, x, y, (0.0, 0.0, 0.0));
             } else {
                 set_pixelf(&mut img_d, x, y, (1.0, 1.0, 1.0));
