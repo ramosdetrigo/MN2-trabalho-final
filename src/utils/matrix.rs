@@ -65,7 +65,7 @@ impl<T: fmt::Display, const N: usize, const M: usize> fmt::Display for Matrix<T,
         for i in 0..N {
             write!(f, "[")?;
             for j in 0..M {
-                write!(f, "{:>8}", self.data[i][j])?;
+                write!(f, "{:.4}", self.data[i][j])?;
                 if j + 1 != M {
                     write!(f, ", ")?;
                 }

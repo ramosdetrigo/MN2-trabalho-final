@@ -229,7 +229,7 @@ impl<T: fmt::Display, const N: usize> fmt::Display for VecN<T, N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[")?;
         for i in 0..N {
-            write!(f, "{}", self.data[i])?;
+            write!(f, "{:.4}", self.data[i])?;
             if i + 1 != N {
                 write!(f, ", ")?;
             }

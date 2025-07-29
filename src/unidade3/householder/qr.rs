@@ -1,78 +1,91 @@
-use crate::utils::Matrix;
+use crate::utils::{Matrix, VecN};
+use std::f64::consts::PI;
 
-/// Decomposição QR via Gram-Schmidt clássico (versão limpa)
-/// Retorna matrizes Q (ortogonal) e R (triangular superior) tal que A = Q * R
-pub fn qr_decomposicao_classica<const N: usize>(
-    a: Matrix<f64, N, N>,
-) -> (Matrix<f64, N, N>, Matrix<f64, N, N>) {
-    let mut q = Matrix::<f64, N, N>::zero();
-    let mut r = Matrix::<f64, N, N>::zero();
+// implementado de acordo com o pdf da aula 22 de 2021
 
-    for j in 0..N {
-        let mut u = [0.0; N];
-        for i in 0..N {
-            u[i] = a[i][j];
+/// Cria uma matriz de rotação de Jacobi Jij para anular o elemento (i,j) da matriz A
+fn matriz_jacobi<const N: usize>(a: &Matrix<f64, N, N>, i: usize, j: usize) -> Matrix<f64, N, N> {
+    let mut jij = Matrix::<f64, N, N>::identity();
+    let eps = 1e-6;
+
+    let a_ij = a[i][j];
+    let a_jj = a[j][j];
+
+    if a_ij.abs() <= eps {
+        return jij;
+    }
+
+    let theta = if a_jj.abs() <= eps {
+        if a_ij < 0.0 {
+            PI / 2.0
+        } else {
+            -PI / 2.0
         }
+    } else {
+        (-a_ij / a_jj).atan()
+    };
 
-        // Projeta o vetor u sobre as colunas anteriores de Q
-        for k in 0..j {
-            let mut dot = 0.0;
-            for i in 0..N {
-                dot += q[i][k] * a[i][j]; // produto interno entre q_k e a_j
-            }
-            r[k][j] = dot;
-            for i in 0..N {
-                u[i] -= dot * q[i][k]; // subtrai projeção de u
-            }
-        }
+    let c = theta.cos();
+    let s = theta.sin();
 
-        // Normaliza o vetor u para formar a j-ésima coluna de Q
-        let norm = u.iter().map(|x| x * x).sum::<f64>().sqrt();
-        r[j][j] = norm;
-        for i in 0..N {
-            q[i][j] = u[i] / norm;
+    jij[i][i] = c;
+    jij[j][j] = c;
+    jij[i][j] = s;
+    jij[j][i] = -s;
+
+    jij
+}
+
+/// Decomposição QR usando rotações de Jacobi (transformações de similaridade)
+pub fn decomposicao_qr_jacobi<const N: usize>(a: Matrix<f64, N, N>) -> (Matrix<f64, N, N>, Matrix<f64, N, N>) {
+    let mut qt = Matrix::<f64, N, N>::identity(); // QT = J_n(n-1) * ... * J_21 * I
+    let mut rvelha = a;
+
+    for j in 0..(N - 1) {
+        for i in (j + 1)..N {
+            let jij = matriz_jacobi::<N>(&rvelha, i, j);
+            let rnova = jij * rvelha;
+            rvelha = rnova;
+            qt = jij * qt;
         }
     }
+
+    let q = qt.transpose();
+    let r = rvelha;
 
     (q, r)
 }
 
-/// Método QR iterativo para encontrar autovalores e autovetores
-/// A matriz A_k converge para uma forma quase diagonal
-/// Os autovalores aparecem na diagonal de A_k, e as colunas da matriz P acumulada são os autovetores
-pub fn metodo_qr<const N: usize>(
-    a: Matrix<f64, N, N>,
-    epsilon: f64,
-    max_iter: usize,
-) -> (Matrix<f64, N, N>, [f64; N]) {
-    let mut a_k = a;                              // Matriz que será atualizada
-    let mut p = Matrix::<f64, N, N>::identity();  // Acumulador dos Q_k
-    let mut erro = 100.0;                         
-    let mut iter = 0;                             
-
-    // Itera até convergir (erro abaixo de epsilon) ou atingir o número máximo de iterações
-    while erro > epsilon && iter < max_iter {
-        let (q, r) = qr_decomposicao_classica(a_k); // Passo 1: Decomposição QR
-        a_k = r * q;                                // Passo 2: Transformação de similaridade A_k = R * Q
-        p = p * q;                                  // Passo 3: Acumula os autovetores: P_k = P_{k-1} * Q_k
-
-        // Passo 4: Verifica convergência com a soma dos quadrados dos elementos abaixo da diagonal
-        erro = 0.0;
-        for i in 1..N {
-            for j in 0..i {
-                erro += a_k[i][j].powi(2);
-            }
+/// Soma dos quadrados dos elementos abaixo da diagonal
+fn soma_quadrados_abaixo<const N: usize>(a: &Matrix<f64, N, N>) -> f64 {
+    let mut soma = 0.0;
+    for i in 1..N {
+        for j in 0..i {
+            soma += a[i][j].powi(2);
         }
+    }
+    soma
+}
 
-        iter += 1;
+/// Método QR iterativo para autovalores/autovetores
+pub fn metodo_qr<const N: usize>(
+    mut a: Matrix<f64, N, N>,
+    epsilon: f64,
+) -> (Matrix<f64, N, N>, VecN<f64, N>) {
+    let mut p = Matrix::<f64, N, N>::identity();
+    let mut val = soma_quadrados_abaixo(&a);
+
+    while val > epsilon {
+        let (q, r) = decomposicao_qr_jacobi(a.clone());
+        a = r * q;       // Aₖ₊₁ = R Q
+        p = p * q;       // acumula vetores
+        val = soma_quadrados_abaixo(&a);
     }
 
-    // Os autovalores estão na diagonal de A_k
-    let mut autovalores = [0.0; N];
+    let mut lamb = VecN::<f64, N>::zero();
     for i in 0..N {
-        autovalores[i] = a_k[i][i];
+        lamb[i] = a[i][i];
     }
 
-    // Retorna os autovetores acumulados (colunas de P) e autovalores
-    (p, autovalores)
+    (p, lamb)
 }
