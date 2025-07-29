@@ -1,5 +1,48 @@
+pub fn rungekutta_ordem3(
+    s0: &Vec<f64>,
+    t0: f64,
+    tf: f64,
+    dt: f64,
+    f: impl Fn(&Vec<f64>, f64) -> Vec<f64>,
+) -> Vec<(f64, Vec<f64>)>
+{
+    let mut estados = Vec::new();
+    let mut s = s0.to_vec();
+    let mut t = t0;
+
+    while t <= tf + 1e-10 {
+        estados.push((t, s.clone()));
+
+        let k1 = f(&s, t);
+
+        let sk2: Vec<f64> = s
+            .iter()
+            .zip(&k1)
+            .map(|(&si, &k1i)| si + 0.5 * dt * k1i)
+            .collect();
+        let k2 = f(&sk2, t + 0.5 * dt);
+
+        let sk3: Vec<f64> = s
+            .iter()
+            .zip(&k1)
+            .zip(&k2)
+            .map(|((&si, &k1i), &k2i)| si - dt * k1i + 2.0 * dt * k2i)
+            .collect();
+        let k3 = f(&sk3, t + dt);
+
+        for i in 0..s.len() {
+            s[i] += dt * (k1[i] + 4.0 * k2[i] + k3[i]) / 6.0;
+        }
+
+        t += dt;
+    }
+
+    estados
+}
+
+
 pub fn rungekutta_ordem4(
-    s0: Vec<f64>,
+    s0: &Vec<f64>,
     t0: f64,
     tf: f64,
     delta: f64,

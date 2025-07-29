@@ -1,6 +1,8 @@
 #![allow(unused_imports)]
 mod euler;
-mod rungekutta;
+mod runge_kutta;
+mod adams;
 
 pub use euler::*;
-pub use rungekutta::*;
+pub use runge_kutta::*;
+pub use adams::*;
