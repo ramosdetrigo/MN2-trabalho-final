@@ -55,12 +55,13 @@ impl Filosofia for Forward {
                     / (12.0 * delta * delta)
             }
 
+            // (45f(x) -154f(x+dx) +214f(x+2dx) -156f(x+3dx) +61f(x+4dx) -10f(x+5dx)) / 12dx²
             OrdemErro::Quarta => {
                 (45.0 * f(x) - 154.0 * f(x + delta) + 214.0 * f(x + delta * 2.0)
                     - 156.0 * f(x + delta * 3.0)
                     + 61.0 * f(x + delta * 4.0)
                     - 10.0 * f(x + delta * 5.0))
-                    / (12.0 * delta * delta)
+                   / (12.0 * delta * delta)
             }
         }
     }
@@ -87,6 +88,7 @@ impl Filosofia for Forward {
                     / (delta * delta * delta)
             }
 
+            // (-17f(x) +71f(x+dx) -118f(x+2dx) +98f(x+3dx) -41f(x+4dx) +7f(x+5dx)) / 4dx³
             OrdemErro::Cubico => {
                 (-17.0 * f(x) + 71.0 * f(x + delta) - 118.0 * f(x + delta * 2.0)
                     + 98.0 * f(x + delta * 3.0)
@@ -95,6 +97,7 @@ impl Filosofia for Forward {
                     / (4.0 * delta * delta * delta)
             }
 
+            // (-49f(x) +232f(x+dx) -461f(x+2dx) +496f(x+3dx) -307f(x+4dx) +104f(x+5dx) -15f(x+6dx)) / 8dx³
             OrdemErro::Quarta => {
                 (-49.0 * f(x) + 232.0 * f(x + delta) - 461.0 * f(x + delta * 2.0)
                     + 496.0 * f(x + delta * 3.0)
@@ -103,6 +106,7 @@ impl Filosofia for Forward {
                     - 15.0 * f(x + delta * 6.0))
                     / (8.0 * delta * delta * delta)
             }
+
         }
     }
 }
